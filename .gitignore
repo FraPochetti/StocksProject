@@ -1,0 +1,7 @@
+*.pdf
+*.csv
+*.json
+*.txt
+StocksProject/Papers
+StocksProject/Varie
+StocksProject/datasets
