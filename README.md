@@ -1,4 +1,4 @@
-Predicting Stock Market Returns (Machine Learning)
+Predicting Stock Market Returns 
 ========
 
 This repository contains the code for the portfolio project I'm working on at **Data Science Retreat** (Berlin).
