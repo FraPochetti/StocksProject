@@ -20,7 +20,7 @@ class BWSpider(scrapy.Spider):
     name = "busweek"
     allowed_domains = ["businessweek.com"]
     url_list = getCleanStartUrlList('businessweek.txt')
-    start_urls = url_list[:4]    
+    start_urls = url_list    
     
     def parse(self, response):
         item = FinancecrawlerItem()
