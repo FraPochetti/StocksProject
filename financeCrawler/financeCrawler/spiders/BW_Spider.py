@@ -19,9 +19,9 @@ def getCleanStartUrlList(filename):
 class BWSpider(scrapy.Spider):
     name = "busweek"
     allowed_domains = ["businessweek.com"]
-    urls = getCleanStartUrlList('businessweek.txt')
-    start_urls = urls[:3]
-
+    url_list = getCleanStartUrlList('businessweek.txt')
+    start_urls = url_list[:4]    
+    
     def parse(self, response):
         item = FinancecrawlerItem()
         item['date'] = response.xpath('//meta[@content][@name="pub_date"]/@content').extract()
