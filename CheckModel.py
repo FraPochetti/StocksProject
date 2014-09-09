@@ -4,39 +4,78 @@ Created on Sat Aug 30 22:10:24 2014
 
 @author: francesco
 """
-import numpy as np
-import matplotlib.pyplot as plt
+#import numpy as np
+#import matplotlib.pyplot as plt
+#import operator
 
-txt = open("ModelSelection.txt", "r")
-
+txt = open("./ClassificRes/RF50_50.txt", "r")
 lines = txt.readlines()
-
 accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
-
 txt.close()
+print 'Max Random Forest Accuracy: ' + str(max(accuracies))
 
-shape = np.sqrt(len(accuracies)/3)
-## matrix: rows -> time lags, columns -> delta return and moving average
-rfc = np.asanyarray(accuracies[0::3]).reshape((shape,shape))
-print ''
-print rfc
-par = np.unravel_index(rfc.argmax(), rfc.shape)
-print 'Max RF Accuracy: ' + str(rfc.max()) + ' at ', par
+txt = open("./ClassificRes/Ada50_50.txt", "r")
+lines = txt.readlines()
+accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
+txt.close()
+print 'Max Ada Boosting Accuracy: ' + str(max(accuracies))
 
-knn = np.asanyarray(accuracies[1::3]).reshape((shape,shape))
-print ''
-print knn
-par = np.unravel_index(knn.argmax(), knn.shape)
-print 'Max KNN Accuracy: ' + str(knn.max()) + ' at ', par
+txt = open("./ClassificRes/KNN50_50.txt", "r")
+lines = txt.readlines()
+accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
+txt.close()
+print 'Max KNN Accuracy: ' + str(max(accuracies))
+
+txt = open("./ClassificRes/SVM50_50.txt", "r")
+lines = txt.readlines()
+accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
+txt.close()
+print 'Max SVM Accuracy: ' + str(max(accuracies))
+
+txt = open("./ClassificRes/GTB50_50.txt", "r")
+lines = txt.readlines()
+accuracies = [float(line[15:-1]) for line in lines[:-1] if line.startswith('Accuracy')]
+txt.close()
+print 'Max GTB Accuracy: ' + str(max(accuracies))
 
 
-#svm = np.asanyarray(accuracies[2::3]).reshape((shape,shape))
+
+
+
+# 
+#knn = np.asanyarray(accuracies[1::nm]).reshape((shape,shape))
 #print ''
+#print ''
+#print 'KNN'
+#print knn
+#par = np.unravel_index(knn.argmax(), knn.shape)
+#print 'Max KNN Accuracy: ' + str(knn.max()) + ' at ', par
+#
+#
+#svm = np.asanyarray(accuracies[2::nm]).reshape((shape,shape))
+#print ''
+#print ''
+#print 'SVM'
 #print svm
 #for ac in svm[:,1]:
 #    print ac
 #print 'Max SVM Accuracy: ' + str(svm.max()) + ' at ', par
 #
+#ada = np.asanyarray(accuracies[1::nm]).reshape((shape,shape))
+#print ''
+#print ''
+#print 'ADA BOOSTING'
+#print ada
+#par = np.unravel_index(ada.argmax(), ada.shape)
+#print 'Max Ada Boosting Accuracy: ' + str(ada.max()) + ' at ', par
+#
+#gtb = np.asanyarray(accuracies[1::nm]).reshape((shape,shape))
+#print ''
+#print ''
+#print 'GRADIENT TREE BOOSTING'
+#print gtb
+#par = np.unravel_index(gtb.argmax(), gtb.shape)
+#print 'Max Gradient Tree Boosting Accuracy: ' + str(gtb.max()) + ' at ', par
 
 #f, axarr = plt.subplots(int(shape), 1, sharex=True, sharey=True)
 #for j in range(9):

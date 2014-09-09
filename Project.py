@@ -278,18 +278,18 @@ for first in range(3,7):
 ##    #print 'Accuracy: ' +  str(float(forTable['Up']['Up'] + forTable['Down']['Down'])/forTable.sum().sum())
 ##    #print forTable#
 ##
-##    #importances = forest.feature_importances_
+##    importances = forest.feature_importances_
 ##    #indices = np.argsort(importances)[::-1]
 ##    performance[i,:] = forest.feature_importances_
 ##
 ##print 'Accuracy: ' + str(accuracy.mean()) + '\n'
 ###print(performance)
 ##importances = performance.mean(axis=0)
-##indices = np.argsort(importances)[::-1]
-### Print the feature ranking
-###print("Feature ranking:")
-###for f in range(finance.shape[1]-2):
-###    print("%d. %s (%f)" % (f + 1, features[indices[f]], importances[indices[f]]))
+indices = np.argsort(importances)[::-1]
+# Print the feature ranking
+print("Feature ranking:")
+for f in range(finance.shape[1]-2):
+    print("%d. %s (%f)" % (f + 1, features[indices[f]], importances[indices[f]]))
 
 ##from sklearn import svm
 ###from sklearn import linear_model
