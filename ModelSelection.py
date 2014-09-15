@@ -13,17 +13,22 @@ performs bidimensional feature selection. The degrees of freedom are :
 """
 
 def performFeatureSelection(maxlag):
-    import functions   
+    import functions
+    import datetime
 
     target = 'CLASSIFICATION'
-    #target = 'REGRESSION'
-
     lags = range(2, maxlag) 
     print 'Maximum time lag applied', max(lags)
     print ''
 
-    for maxdelta in range(3,8):
-        datasets = functions.loadDatasets('/home/francesco/Dropbox/DSR/StocksProject/datasets')
+    for maxdelta in range(3, 12):
+        #datasets = functions.loadDatasets('/home/francesco/Dropbox/DSR/StocksProject/longdatasets')
+        start = datetime.datetime(1990, 1, 1)
+        end = datetime.datetime(2014, 8, 31)
+        out = functions.getStock('GM', start, end)
+        datasets = functions.loadDatasets('/home/francesco/Dropbox/DSR/StocksProject/longdatasets')
+        datasets.insert(0, out)
+
 
         delta = range(2,maxdelta) 
         print 'Delta days accounted: ', max(delta)
@@ -31,16 +36,13 @@ def performFeatureSelection(maxlag):
         for dataset in datasets:
             columns = dataset.columns    
             adjclose = columns[-2]
-            
             returns = columns[-1]
-            
-            for n in delta:
-                
+            for n in delta:    
                 functions.addFeatures(dataset, adjclose, returns, n)
-            dataset = dataset.iloc[max(delta):,:] 
+            #dataset = dataset.iloc[max(delta):,:] 
     
         finance = functions.mergeDataframes(datasets, 6, target)
-    
+        #finance = finance.ix[max(delta):]
         print 'Size of data frame: ', finance.shape
         print 'Number of NaN after merging: ', functions.count_missing(finance)
     
@@ -51,8 +53,8 @@ def performFeatureSelection(maxlag):
         print 'Number of NaN after mean interpolation: ', functions.count_missing(finance)    
 
         back = -1
-        finance.Return_SP500 = finance.Return_SP500.shift(back)
-    
+        finance.Return_Out = finance.Return_Out.shift(back)
+
         finance = functions.applyTimeLag(finance, lags, delta, back, target)
     
         print 'Number of NaN after temporal shifting: ', functions.count_missing(finance)
@@ -60,15 +62,14 @@ def performFeatureSelection(maxlag):
         print 'Size of data frame after feature creation: ', finance.shape   
     
         if target == 'CLASSIFICATION':
-            functions.performClassification(finance, 0.8)
-            print ''
-    
-        elif target == 'REGRESSION':
-            functions.performRegression(finance, 0.8)
+            start_test = datetime.datetime(2014,4,1)
+            X_train, y_train, X_test, y_test  = functions.prepareDataForClassification(finance, start_test)    
+            print functions.performClassification(X_train, y_train, X_test, y_test, 'GTB', [])
             print ''
 
-#import sys
-#sys.stdout = open('./RegresRes/RFreg50_50.txt', 'w')
-
-for maxlag in range(3,8):
-    performFeatureSelection(maxlag)
+if __name__ == '__main__':
+    for i in range(1,11):
+        import sys
+        sys.stdout = open('./ClassificRes/GeneralMotors/GTB%s.txt' %str(i), 'w')
+        for maxlag in range(3,12):
+            performFeatureSelection(maxlag)

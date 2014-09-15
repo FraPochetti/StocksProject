@@ -8,35 +8,38 @@ Created on Sat Aug 30 22:10:24 2014
 #import matplotlib.pyplot as plt
 #import operator
 
-txt = open("./ClassificRes/RF50_50.txt", "r")
+#txt = open("./ClassificRes/RF50_50.txt", "r")
+#lines = txt.readlines()
+#accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
+#txt.close()
+#print 'Max Random Forest Accuracy: ' + str(max(accuracies))
+#
+txt = open("./ClassificRes/Apple/RF30_30.txt", "r")
 lines = txt.readlines()
-accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
+for line in lines:
+    if line.startswith('0.'):
+        print line[11:-1]
+accuracies = [float(line[11:-1]) for line in lines if line.startswith('0.')]
 txt.close()
-print 'Max Random Forest Accuracy: ' + str(max(accuracies))
-
-txt = open("./ClassificRes/Ada50_50.txt", "r")
-lines = txt.readlines()
-accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
-txt.close()
-print 'Max Ada Boosting Accuracy: ' + str(max(accuracies))
-
-txt = open("./ClassificRes/KNN50_50.txt", "r")
-lines = txt.readlines()
-accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
-txt.close()
-print 'Max KNN Accuracy: ' + str(max(accuracies))
-
-txt = open("./ClassificRes/SVM50_50.txt", "r")
-lines = txt.readlines()
-accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
-txt.close()
-print 'Max SVM Accuracy: ' + str(max(accuracies))
-
-txt = open("./ClassificRes/GTB50_50.txt", "r")
-lines = txt.readlines()
-accuracies = [float(line[15:-1]) for line in lines[:-1] if line.startswith('Accuracy')]
-txt.close()
-print 'Max GTB Accuracy: ' + str(max(accuracies))
+print 'Max RF: ' + str(max(accuracies))
+#
+#txt = open("./ClassificRes/KNN50_50.txt", "r")
+#lines = txt.readlines()
+#accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
+#txt.close()
+#print 'Max KNN Accuracy: ' + str(max(accuracies))
+#
+#txt = open("./ClassificRes/SVM50_50.txt", "r")
+#lines = txt.readlines()
+#accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
+#txt.close()
+#print 'Max SVM Accuracy: ' + str(max(accuracies))
+#
+#txt = open("./ClassificRes/GTB50_50.txt", "r")
+#lines = txt.readlines()
+#accuracies = [float(line[15:-1]) for line in lines[:-1] if line.startswith('Accuracy')]
+#txt.close()
+#print 'Max GTB Accuracy: ' + str(max(accuracies))
 
 
 

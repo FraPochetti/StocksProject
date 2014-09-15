@@ -21,15 +21,20 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.svm import SVR
 from sklearn.svm import SVC
 import operator
+from sklearn.metrics import roc_auc_score
+import pandas.io.data
+from sklearn.qda import QDA
 
 
 def loadDatasets(path_directory): 
     """
     import into dataframe all datasets saved in path_directory
     """
+    name = path_directory + '/apple.csv'
+    out = pd.read_csv(name, index_col=0, parse_dates=True)
     
-    name = path_directory + '/sp.csv'
-    sp = pd.read_csv(name, index_col=0, parse_dates=True)
+    #name = path_directory + '/sp.csv'
+    #sp = pd.read_csv(name, index_col=0, parse_dates=True)
     
     name = path_directory + '/nasdaq.csv'
     nasdaq = pd.read_csv(name, index_col=0, parse_dates=True)
@@ -37,8 +42,8 @@ def loadDatasets(path_directory):
     name = path_directory + '/djia.csv'
     djia = pd.read_csv(name, index_col=0, parse_dates=True)
     
-    name = path_directory + '/treasury.csv'
-    treasury = pd.read_csv(name, index_col=0, parse_dates=True)
+    #name = path_directory + '/treasury.csv'
+    #treasury = pd.read_csv(name, index_col=0, parse_dates=True)
     
     name = path_directory + '/hkong.csv'
     hkong = pd.read_csv(name, index_col=0, parse_dates=True)
@@ -58,8 +63,22 @@ def loadDatasets(path_directory):
     name = path_directory + '/australia.csv'
     australia = pd.read_csv(name, index_col=0, parse_dates=True)
     
-    return [sp, nasdaq, djia, treasury, hkong, frankfurt, paris, nikkei, london, australia]
+    #return [sp, nasdaq, djia, treasury, hkong, frankfurt, paris, nikkei, london, australia]
+    #return [out, nasdaq, djia, frankfurt, hkong, nikkei, australia]
+    return [nasdaq, djia, frankfurt, london, paris, hkong, nikkei, australia]
 
+
+def getStock(symbol, start, end):
+    """
+    downloads stock which is gonna be the output of prediciton
+    """
+    out =  pd.io.data.get_data_yahoo(symbol, start, end)
+
+    out.columns.values[-1] = 'AdjClose'
+    out.columns = out.columns + '_Out'
+    out['Return_Out'] = out['AdjClose_Out'].pct_change()
+    return out
+    
 
 def count_missing(dataframe):
     """
@@ -92,8 +111,8 @@ def mergeDataframes(datasets, index, target):
     
     if target == 'CLASSIFICATION':    
         return datasets[0].iloc[:, index:].join(subset, how = 'outer')
-    elif target == 'REGRESSION':
-        return datasets[0].iloc[:, index:].join(subset, how = 'outer')          
+    #elif target == 'REGRESSION':
+    #    return datasets[0].iloc[:, index:].join(subset, how = 'outer')          
         
     
 def applyTimeLag(dataset, lags, delta, back, target):
@@ -114,16 +133,16 @@ def applyTimeLag(dataset, lags, delta, back, target):
                 dataset[newcolumn] = dataset[column].shift(lag)
 
         return dataset.iloc[maxLag:-1,:]
-    elif target == 'REGRESSION':
-        maxLag = max(lags)
-        
-        columns = dataset.columns[::(2*max(delta)-1)]
-        for column in columns:
-            for lag in lags:
-                newcolumn = column + str(lag)
-                dataset[newcolumn] = dataset[column].shift(lag)
-
-        return dataset.iloc[maxLag:-1,:]       
+#    elif target == 'REGRESSION':
+#        maxLag = max(lags)
+#        
+#        columns = dataset.columns[::(2*max(delta)-1)]
+#        for column in columns:
+#            for lag in lags:
+#                newcolumn = column + str(lag)
+#                dataset[newcolumn] = dataset[column].shift(lag)
+#
+#        return dataset.iloc[maxLag:-1,:]       
 
 
 def performCV(dataset, folds, split, features, method, parameters):
@@ -183,99 +202,148 @@ def performTimeSeriesSearchGrid(dataset, folds, split, features, method, grid):
         print ''
         print 'Final CV Results: ', final
         return final[0]
-        
+
+
+
+##################
+################## MERGING SENTIMENT
+
+def mergeSentimenToStocks(stocks):
+    df = pd.read_csv('/home/francesco/BigData/Project/CSV/sentiment.csv', index_col = 'date')
+    final = stocks.join(df, how='left')
+    return final
+       
         
 ###############################################################################    
 ###############################################################################    
 ###############################################################################
 ######## CLASSIFICATION    
     
-def prepareDataForClassification(dataset):
+#####IDEAS --> MULTIPLYEACH RETURN BY 100, QDA, AUC
+#####    
+    
+def prepareDataForClassification(dataset, start_test):
     """
     generates categorical to be predicted column, attach to dataframe 
     and label the categories
     """
     le = preprocessing.LabelEncoder()
-        
-    dataset['UpDown'] = dataset['Return_SP500']
+    
+    #dataset['UpDown'] = dataset['Return_SP500']    
+    dataset['UpDown'] = dataset['Return_Out']
     dataset.UpDown[dataset.UpDown >= 0] = 'Up'
     dataset.UpDown[dataset.UpDown < 0] = 'Down'
     dataset.UpDown = le.fit(dataset.UpDown).transform(dataset.UpDown)
+    
     features = dataset.columns[1:-1]
-
-    return dataset, features    
+    X = dataset[features]    
+    y = dataset.UpDown    
+    
+    X_train = X[X.index < start_test]
+    y_train = y[y.index < start_test]    
+    
+    X_test = X[X.index >= start_test]    
+    y_test = y[y.index >= start_test]
+    
+    return X_train, y_train, X_test, y_test    
 
 
   
-def performClassification(dataset, features, split, method, parameters):
+def performClassification(X_train, y_train, X_test, y_test, method, parameters):
     """
     performs classification on returns using serveral algorithms
     """
-    index = int(np.floor(dataset.shape[0]*split))
-    train, test = dataset[:index], dataset[index:]
     print ''
-    print 'Performing Classification...'    
-    print 'Size of train set: ', train.shape
-    print 'Size of test set: ', test.shape
+    print 'Performing ' + method + ' Classification...'    
+    print 'Size of train set: ', X_train.shape
+    print 'Size of test set: ', X_test.shape
    
     if method == 'RF':   
-        return performRFClass(train, test, features)
+        return performRFClass(X_train, y_train, X_test, y_test)
+        
     elif method == 'KNN':
-        return performKNNClass(train, test, features)
-    elif method == 'SVM':   
-        return performSVMClass(train, test, features)
-    elif method == 'ADA':
-        return performAdaBoostClass(train, test, features, parameters)
-    elif method == 'GTB': 
-        return performGTBClass(train, test, features)
-
+        return performKNNClass(X_train, y_train, X_test, y_test)
     
-def performRFClass(train, test, features):
+    elif method == 'SVM':   
+        return performSVMClass(X_train, y_train, X_test, y_test)
+    
+    elif method == 'ADA':
+        return performAdaBoostClass(X_train, y_train, X_test, y_test, parameters)
+    
+    elif method == 'GTB': 
+        return performGTBClass(X_train, y_train, X_test, y_test)
+
+    elif method == 'QDA': 
+        return performQDAClass(X_train, y_train, X_test, y_test)
+    
+def performRFClass(X_train, y_train, X_test, y_test):
     """
     Random Forest Binary Classification
     """
-    forest = RandomForestClassifier(n_estimators=100, n_jobs=-1)
-    forest = forest.fit(train[features], train['UpDown'])
-    accuracy = forest.score(test[features],test['UpDown'])
+    clf = RandomForestClassifier(n_estimators=100, n_jobs=-1)
+    clf.fit(X_train, y_train)
+    accuracy = clf.score(X_test, y_test)
+    #auc = roc_auc_score(y_test, clf.predict(X_test))
     return accuracy
         
-def performKNNClass(train, test, features):
+def performKNNClass(X_train, y_train, X_test, y_test):
     """
     KNN binary Classification
     """
-    model = neighbors.KNeighborsClassifier()
-    model.fit(train[features], train['UpDown']) 
-    accuracy = model.score(test[features],test['UpDown'])
+    clf = neighbors.KNeighborsClassifier()
+    clf.fit(X_train, y_train)
+    accuracy = clf.score(X_test, y_test)
+    #auc = roc_auc_score(y_test, clf.predict(X_test))
     return accuracy
 
-def performSVMClass(train, test, features):
+def performSVMClass(X_train, y_train, X_test, y_test):
     """
     SVM binary Classification
     """
-    mod = svm.SVC()
-    mod.fit(train[features], train['UpDown'])  
-    accuracy = mod.score(test[features], test['UpDown'])
-    return accuracy    
+    clf = SVC()
+    clf.fit(X_train, y_train)
+    accuracy = clf.score(X_test, y_test)
+    #auc = roc_auc_score(y_test, clf.predict(X_test))
+    return accuracy
     
-def performAdaBoostClass(train, test, features, parameters):
+def performAdaBoostClass(X_train, y_train, X_test, y_test, parameters):
     """
     Ada Boosting binary Classification
     """
     n = parameters[0]
     l =  parameters[1]
-    mod = AdaBoostClassifier(n_estimators = n, learning_rate = l)
-    mod.fit(train[features], train['UpDown'])  
-    accuracy = mod.score(test[features], test['UpDown'])
+    clf = AdaBoostClassifier(n_estimators = n, learning_rate = l)
+    clf.fit(X_train, y_train)
+    accuracy = clf.score(X_test, y_test)
+    #auc = roc_auc_score(y_test, clf.predict(X_test))
     return accuracy
     
-def performGTBClass(train, test, features):
+def performGTBClass(X_train, y_train, X_test, y_test):
     """
     Gradient Tree Boosting binary Classification
     """
-    mod = GradientBoostingClassifier(n_estimators=100)
-    mod.fit(train[features], train['UpDown'])  
-    accuracy = mod.score(test[features], test['UpDown'])  
+    clf = GradientBoostingClassifier(n_estimators=100)
+    clf.fit(X_train, y_train)
+    accuracy = clf.score(X_test, y_test)
+    #auc = roc_auc_score(y_test, clf.predict(X_test))
     return accuracy
+
+def performQDAClass(X_train, y_train, X_test, y_test):
+    """
+    Gradient Tree Boosting binary Classification
+    """
+    clf = QDA()
+    clf.fit(X_train, y_train)
+    accuracy = clf.score(X_test, y_test)
+    #auc = roc_auc_score(y_test, clf.predict(X_test))
+    return accuracy
+
+
+
+
+
+
+
 
 
 ##############################################################################
