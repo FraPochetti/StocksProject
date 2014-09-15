@@ -1,7 +1,8 @@
 *.pdf
-*.csv
 *.json
 *.txt
 Papers/
 Varie/
 datasets/
+longdatasets/
+ClassificRes/
