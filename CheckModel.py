@@ -8,42 +8,43 @@ Created on Sat Aug 30 22:10:24 2014
 #import matplotlib.pyplot as plt
 #import operator
 
-#txt = open("./ClassificRes/RF50_50.txt", "r")
-#lines = txt.readlines()
-#accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
-#txt.close()
-#print 'Max Random Forest Accuracy: ' + str(max(accuracies))
-#
-txt = open("./ClassificRes/Apple/RF30_30.txt", "r")
+import re
+
+txt = open("./ClassificRes/GeneralElectric/RF1.txt", "r")
 lines = txt.readlines()
-for line in lines:
-    if line.startswith('0.'):
-        print line[11:-1]
-accuracies = [float(line[11:-1]) for line in lines if line.startswith('0.')]
+accuracies = [float(re.search( r': (0.\d+)', line).group(1)) for line in lines if line.startswith('Mean')]
 txt.close()
 print 'Max RF: ' + str(max(accuracies))
-#
-#txt = open("./ClassificRes/KNN50_50.txt", "r")
-#lines = txt.readlines()
-#accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
-#txt.close()
-#print 'Max KNN Accuracy: ' + str(max(accuracies))
-#
-#txt = open("./ClassificRes/SVM50_50.txt", "r")
-#lines = txt.readlines()
-#accuracies = [float(line[15:-1]) for line in lines if line.startswith('Accuracy')]
-#txt.close()
-#print 'Max SVM Accuracy: ' + str(max(accuracies))
-#
-#txt = open("./ClassificRes/GTB50_50.txt", "r")
-#lines = txt.readlines()
-#accuracies = [float(line[15:-1]) for line in lines[:-1] if line.startswith('Accuracy')]
-#txt.close()
-#print 'Max GTB Accuracy: ' + str(max(accuracies))
 
+txt = open("./ClassificRes/GeneralElectric/QDA1.txt", "r")
+lines = txt.readlines()
+accuracies = [float(re.search( r': (0.\d+)', line).group(1)) for line in lines if line.startswith('Mean')]
+txt.close()
+print 'Max QDA: ' + str(max(accuracies))
 
+txt = open("./ClassificRes/GeneralElectric/KNN1.txt", "r")
+lines = txt.readlines()
+accuracies = [float(re.search( r': (0.\d+)', line).group(1)) for line in lines if line.startswith('Mean')]
+txt.close()
+print 'Max KNN: ' + str(max(accuracies))
 
+txt = open("./ClassificRes/GeneralElectric/SVM1.txt", "r")
+lines = txt.readlines()
+accuracies = [float(re.search( r': (0.\d+)', line).group(1)) for line in lines if line.startswith('Mean')]
+txt.close()
+print 'Max SVM: ' + str(max(accuracies))
 
+txt = open("./ClassificRes/GeneralElectric/ADA1.txt", "r")
+lines = txt.readlines()
+accuracies = [float(re.search( r': (0.\d+)', line).group(1)) for line in lines if line.startswith('Mean')]
+txt.close()
+print 'Max ADA: ' + str(max(accuracies))
+
+txt = open("./ClassificRes/GeneralElectric/GTB1.txt", "r")
+lines = txt.readlines()
+accuracies = [float(re.search( r': (0.\d+)', line).group(1)) for line in lines if line.startswith('Mean')]
+txt.close()
+print 'Max GTB: ' + str(max(accuracies))
 
 # 
 #knn = np.asanyarray(accuracies[1::nm]).reshape((shape,shape))

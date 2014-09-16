@@ -21,13 +21,13 @@ def performFeatureSelection(maxlag):
     print 'Maximum time lag applied', max(lags)
     print ''
 
-    for maxdelta in range(3, 12):
+    for maxdelta in range(3,12):
         #datasets = functions.loadDatasets('/home/francesco/Dropbox/DSR/StocksProject/longdatasets')
-        start = datetime.datetime(1990, 1, 1)
-        end = datetime.datetime(2014, 8, 31)
-        out = functions.getStock('GM', start, end)
+        #start = datetime.datetime(1990, 1, 1)
+        #end = datetime.datetime(2014, 8, 31)
+        #out = functions.getStock('AAPL', start, end)
         datasets = functions.loadDatasets('/home/francesco/Dropbox/DSR/StocksProject/longdatasets')
-        datasets.insert(0, out)
+        #datasets.insert(0, out)
 
 
         delta = range(2,maxdelta) 
@@ -40,7 +40,7 @@ def performFeatureSelection(maxlag):
             for n in delta:    
                 functions.addFeatures(dataset, adjclose, returns, n)
             #dataset = dataset.iloc[max(delta):,:] 
-    
+        
         finance = functions.mergeDataframes(datasets, 6, target)
         #finance = finance.ix[max(delta):]
         print 'Size of data frame: ', finance.shape
@@ -51,7 +51,7 @@ def performFeatureSelection(maxlag):
 
         finance = finance.fillna(finance.mean())
         print 'Number of NaN after mean interpolation: ', functions.count_missing(finance)    
-
+        
         back = -1
         finance.Return_Out = finance.Return_Out.shift(back)
 
@@ -63,13 +63,17 @@ def performFeatureSelection(maxlag):
     
         if target == 'CLASSIFICATION':
             start_test = datetime.datetime(2014,4,1)
-            X_train, y_train, X_test, y_test  = functions.prepareDataForClassification(finance, start_test)    
-            print functions.performClassification(X_train, y_train, X_test, y_test, 'GTB', [])
-            print ''
+            X_train, y_train, X_test, y_test  = functions.prepareDataForClassification(finance, start_test)
+         
+            acc = functions.performCV(X_train, y_train, 10, 'GTB', [])           
+            print ''            
+            print 'Mean Accuracy for (%d, %d): %f' % (max(lags), max(delta), acc)             
+            #print functions.performClassification(X, y, X_val, y_val, 'ADA', [100, 1])
+            print '============================================================================'
 
 if __name__ == '__main__':
-    for i in range(1,11):
+    for i in range(1,2):
         import sys
-        sys.stdout = open('./ClassificRes/GeneralMotors/GTB%s.txt' %str(i), 'w')
+        sys.stdout = open('./ClassificRes/Procter/GTB%s.txt' %str(i), 'w')
         for maxlag in range(3,12):
             performFeatureSelection(maxlag)
